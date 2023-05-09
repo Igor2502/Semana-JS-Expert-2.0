@@ -11,6 +11,7 @@ class Business {
     this.currentPeer = {}
 
     this.peers = new Map()
+    this.usersRecordings = new Map()
   }
 
   static initialize(deps) {
@@ -19,6 +20,8 @@ class Business {
   }
 
   async _init() {
+    this.view.configureRecordButton(this.onRecordPress.bind(this))
+
     this.currentStream = await this.media.getCamera()
     this.socket = this.socketBuilder
       .setOnUserConnected(this.onUserConnected())
@@ -30,36 +33,52 @@ class Business {
       .setOnConnectionOpened(this.onPeerConectionOpened())
       .setOnCallReceived(this.onPeerCallReceived())
       .setOnPeerStreamReceived(this.onPeerStreamReceived())
+      .setOnCallError(this.onPeerCallError())
+      .setOnCallClose(this.onPeerCallClose())
       .build()
 
-    this.addVideoStream('teste01')
+    this.addVideoStream(this.currentPeer.id)
   }
 
   addVideoStream(userId, stream = this.currentStream) {
+    const recorderInstance = new Recorder(userId, stream)
+    this.usersRecordings.set(recorderInstance.fileName, recorderInstance)
+    if (this.recordingEnabled) {
+      recorderInstance.startRecording()
+    }
+
     const isCurrentId = false
     this.view.renderVideo({ userId, stream, isCurrentId })
   }
 
-  onUserConnected = function () {
+  onUserConnected() {
     return userId => {
       console.log('user connected!!', userId)
       this.currentPeer.call(userId, this.currentStream)
     }
   }
 
-  onUserDisconnected = function () {
+  onUserDisconnected() {
     return userId => {
       console.log('user disconnected!!', userId)
+
+      if (this.peers.has(userId)) {
+        this.peers.get(userId).call.close()
+        this.peers.delete(userId)
+      }
+
+      this.view.setParticipants(this.peers.size)
+      this.view.removeVideoElement(userId)
     }
   }
 
-  onPeerError = function () {
+  onPeerError() {
     return error => {
       console.error('error on peer!', error)
     }
   }
 
-  onPeerConectionOpened = function () {
+  onPeerConectionOpened() {
     return peer => {
       const id = peer.id
       console.log('peer', peer)
@@ -67,19 +86,58 @@ class Business {
     }
   }
 
-  onPeerCallReceived = function () {
+  onPeerCallReceived() {
     return call => {
       console.log('answering call!', call)
       call.answer(this.currentStream)
     }
   }
 
-  onPeerStreamReceived = function () {
+  onPeerStreamReceived() {
     return (call, stream) => {
       const callerId = call.peer
       this.addVideoStream(callerId, stream)
       this.peers.set(callerId, { call })
       this.view.setParticipants(this.peers.size)
+    }
+  }
+
+  onPeerCallError() {
+    return (call, error) => {
+      console.log('an call error ocurred!', error)
+      this.view.removeVideoElement(call.peer)
+    }
+  }
+
+  onPeerCallClose() {
+    return call => {
+      console.log('call close!', call.peer)
+    }
+  }
+
+  onRecordPress(recordingEnabled) {
+    this.recordingEnabled = recordingEnabled
+    console.log('pressionou', recordingEnabled)
+    for (const [key, value] of this.usersRecordings) {
+      if (this.usersRecordings) {
+        value.startRecording()
+        continue
+      }
+      this.stopRecording(key)
+    }
+  }
+
+  async stopRecording(userId) {
+    const userRecordings = this.usersRecordings
+    for (const [key, value] of userRecordings) {
+      const isContextUser = kei.includes(userId)
+      if (!isContextUser) continue
+
+      const rec = value
+      const isRecordingActive = rec.recordingActive
+      if (!isRecordingActive) continue
+
+      await rec.stopRecording()
     }
   }
 }
