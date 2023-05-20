@@ -1,5 +1,5 @@
 class SocketBuilder {
-  constructor({ socketUrl })  {
+  constructor({ socketUrl }) {
     this.socketUrl = socketUrl
     this.onUserConnected = () => {}
     this.onUserDisconnected = () => {}

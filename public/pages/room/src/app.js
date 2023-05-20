@@ -14,7 +14,7 @@ const onload = () => {
       path: '/'
     }
   })
-  const peerBuilder = new PeerBuider({ peerConfig })
+  const peerBuilder = new PeerBuilder({ peerConfig })
   const view = new View()
   const media = new Media()
   const deps = { view, media, room, socketBuilder, peerBuilder }

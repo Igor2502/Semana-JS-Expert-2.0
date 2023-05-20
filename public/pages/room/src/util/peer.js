@@ -1,4 +1,4 @@
-class PeerBuider {
+class PeerBuilder {
   constructor({ peerConfig }) {
     this.peerConfig = peerConfig
 

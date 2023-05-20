@@ -20,7 +20,8 @@ class Business {
   }
 
   async _init() {
-    this.view.configureRecordButton(this.onRecordPress.bind(this))
+    this.view.configureRecordButton(this.onRecordPressed.bind(this))
+    this.view.configureLeaveButton(this.onLeavePressed.bind(this))
 
     this.currentStream = await this.media.getCamera()
     this.socket = this.socketBuilder
@@ -30,7 +31,7 @@ class Business {
 
     this.currentPeer = await this.peerBuilder
       .setOnError(this.onPeerError())
-      .setOnConnectionOpened(this.onPeerConectionOpened())
+      .setOnConnectionOpened(this.onPeerConnectionOpened())
       .setOnCallReceived(this.onPeerCallReceived())
       .setOnPeerStreamReceived(this.onPeerStreamReceived())
       .setOnCallError(this.onPeerCallError())
@@ -47,7 +48,7 @@ class Business {
       recorderInstance.startRecording()
     }
 
-    const isCurrentId = false
+    const isCurrentId = userId === this.currentPeer.id
     this.view.renderVideo({ userId, stream, isCurrentId })
   }
 
@@ -68,6 +69,7 @@ class Business {
       }
 
       this.view.setParticipants(this.peers.size)
+      this.stopRecording(userId)
       this.view.removeVideoElement(userId)
     }
   }
@@ -78,7 +80,7 @@ class Business {
     }
   }
 
-  onPeerConectionOpened() {
+  onPeerConnectionOpened() {
     return peer => {
       const id = peer.id
       console.log('peer', peer)
@@ -96,6 +98,10 @@ class Business {
   onPeerStreamReceived() {
     return (call, stream) => {
       const callerId = call.peer
+      if (this.peers.has(callerId)) {
+        console.log('calling twice, ignoring second call...', callerId)
+        return
+      }
       this.addVideoStream(callerId, stream)
       this.peers.set(callerId, { call })
       this.view.setParticipants(this.peers.size)
@@ -104,6 +110,12 @@ class Business {
 
   onPeerCallError() {
     return (call, error) => {
+      if(this.peers.has(userId)) {
+        this.peers.get(userId).call.close()
+        this.peers.delete(userId)
+      }
+      this.view.setParticipants(this.peers.size)
+
       console.log('an call error ocurred!', error)
       this.view.removeVideoElement(call.peer)
     }
@@ -115,11 +127,11 @@ class Business {
     }
   }
 
-  onRecordPress(recordingEnabled) {
+  onRecordPressed(recordingEnabled) {
     this.recordingEnabled = recordingEnabled
     console.log('pressionou', recordingEnabled)
     for (const [key, value] of this.usersRecordings) {
-      if (this.usersRecordings) {
+      if (this.recordingEnabled) {
         value.startRecording()
         continue
       }
@@ -127,10 +139,14 @@ class Business {
     }
   }
 
+  onLeavePressed() {
+    this.usersRecordings.forEach((value, key) => value.download())
+  }
+
   async stopRecording(userId) {
-    const userRecordings = this.usersRecordings
-    for (const [key, value] of userRecordings) {
-      const isContextUser = kei.includes(userId)
+    const usersRecordings = this.usersRecordings
+    for (const [key, value] of usersRecordings) {
+      const isContextUser = key.includes(userId)
       if (!isContextUser) continue
 
       const rec = value
@@ -138,6 +154,16 @@ class Business {
       if (!isRecordingActive) continue
 
       await rec.stopRecording()
+      this.playRecordings(key)
     }
+  }
+
+  playRecordings(userId) {
+    const user = this.usersRecordings.get(userId)
+    const videosURLs = user.getAllVideoURLs()
+    console.log('videoURLs', videosURLs)
+    videosURLs.map(url => {
+      this.view.renderVideo({ url, userId })
+    })
   }
 }

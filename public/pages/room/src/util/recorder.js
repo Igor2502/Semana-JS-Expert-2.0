@@ -24,7 +24,7 @@ class Recorder {
       .find(options => MediaRecorder.isTypeSupported(options.mimeType))
 
     if (!options) {
-      throw new Error(`none of codecs: ${commonCodecs.join(',')} are suported`)
+      throw new Error(`none of the codecs: ${commonCodecs.join(',')} are supported`)
     }
 
     return options
@@ -38,7 +38,7 @@ class Recorder {
     console.log(`Created MediaRecorder ${this.mediaRecorder} with options: ${options}`)
 
     this.mediaRecorder.onstop = (event) => {
-      console.log('Record blobs', this.recordedBlobs)
+      console.log('Recorded blobs', this.recordedBlobs)
     }
 
     this.mediaRecorder.ondataavailable = (event) => {
@@ -61,7 +61,31 @@ class Recorder {
 
     this.recordingActive = false
     await Util.sleep(200)
-    this.completeRecordings([...this.recordedBlobs])
+    this.completeRecordings.push([...this.recordedBlobs])
     this.recordedBlobs = []
+  }
+
+  getAllVideoURLs() {
+    return this.completeRecordings.map(recording => {
+      const superBuffer = new Blob(recording, { type: this.videoType })
+
+      return window.URL.createObjectURL(superBuffer)
+    })
+  }
+
+  download() {
+    if (!this.completeRecordings.length) return
+
+    for (const recording of this.completeRecordings) {
+      const blob = new Blob(recording, { type: this.videoType })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `${this.fileName}.webm`
+      document.body.appendChild(a)
+      console.log('AQUI!!');
+      a.click()
+    }
   }
 }
