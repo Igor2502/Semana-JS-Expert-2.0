@@ -54,14 +54,12 @@ class Business {
 
   onUserConnected() {
     return userId => {
-      console.log('user connected!!', userId)
       this.currentPeer.call(userId, this.currentStream)
     }
   }
 
   onUserDisconnected() {
     return userId => {
-      console.log('user disconnected!!', userId)
 
       if (this.peers.has(userId)) {
         this.peers.get(userId).call.close()
@@ -83,14 +81,12 @@ class Business {
   onPeerConnectionOpened() {
     return peer => {
       const id = peer.id
-      console.log('peer', peer)
       this.socket.emit('join-room', this.room, id)
     }
   }
 
   onPeerCallReceived() {
     return call => {
-      console.log('answering call!', call)
       call.answer(this.currentStream)
     }
   }
@@ -99,7 +95,7 @@ class Business {
     return (call, stream) => {
       const callerId = call.peer
       if (this.peers.has(callerId)) {
-        console.log('calling twice, ignoring second call...', callerId)
+        console.warn('calling twice, ignoring second call...', callerId)
         return
       }
       this.addVideoStream(callerId, stream)
@@ -116,20 +112,19 @@ class Business {
       }
       this.view.setParticipants(this.peers.size)
 
-      console.log('an call error ocurred!', error)
+      console.error('an call error ocurred!', error)
       this.view.removeVideoElement(call.peer)
     }
   }
 
   onPeerCallClose() {
     return call => {
-      console.log('call close!', call.peer)
+      console.info('call close!', call.peer)
     }
   }
 
   onRecordPressed(recordingEnabled) {
     this.recordingEnabled = recordingEnabled
-    console.log('pressionou', recordingEnabled)
     for (const [key, value] of this.usersRecordings) {
       if (this.recordingEnabled) {
         value.startRecording()
@@ -161,7 +156,6 @@ class Business {
   playRecordings(userId) {
     const user = this.usersRecordings.get(userId)
     const videosURLs = user.getAllVideoURLs()
-    console.log('videoURLs', videosURLs)
     videosURLs.map(url => {
       this.view.renderVideo({ url, userId })
     })

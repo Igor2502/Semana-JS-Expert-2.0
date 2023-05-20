@@ -35,10 +35,9 @@ class Recorder {
     if (!this.stream.active) return
 
     this.mediaRecorder = new MediaRecorder(this.stream, options)
-    console.log(`Created MediaRecorder ${this.mediaRecorder} with options: ${options}`)
 
     this.mediaRecorder.onstop = (event) => {
-      console.log('Recorded blobs', this.recordedBlobs)
+      console.info('Recorded blobs', this.recordedBlobs)
     }
 
     this.mediaRecorder.ondataavailable = (event) => {
@@ -48,7 +47,6 @@ class Recorder {
     }
 
     this.mediaRecorder.start()
-    console.log(`Media Recorded started`, this.mediaRecorder)
     this.recordingActive = true
   }
 
@@ -56,7 +54,6 @@ class Recorder {
     if (!this.recordingActive) return
     if (this.mediaRecorder.state === 'inactive') return
     
-    console.log('Media Recorded stoped!', this.userName)
     this.mediaRecorder.stop()
 
     this.recordingActive = false
@@ -84,7 +81,6 @@ class Recorder {
       a.href = url
       a.download = `${this.fileName}.webm`
       document.body.appendChild(a)
-      console.log('AQUI!!');
       a.click()
     }
   }

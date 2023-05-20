@@ -4,10 +4,10 @@ window.onload = () => {
             const room = prompt('Room name')
             if (!room) {
                 alert('wrong room')
-                return;
+                return
             }
 
-            window.open('/pages/room/?room=' + room);
+            window.open('/pages/room/?room=' + room)
 
         })
     }
