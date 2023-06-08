@@ -3,6 +3,7 @@ class View {
     this.recorderBtn = document.getElementById('record')
     this.leaveBtn = document.getElementById('leave')
     this.toggleVideoBtn = document.getElementById('toggle-video')
+    this.toggleMicBtn = document.getElementById('toggle-mic')
   }
 
   createVideoElement({ muted = true, src, srcObject }) {
@@ -63,6 +64,12 @@ class View {
       : `<i class="fas fa-video-slash"></i><span>Start Video</span>`
   }
 
+  toogleMicButtonIcon(isActive = true) {
+    this.toggleMicBtn.innerHTML = isActive 
+      ? `<i class="fas fa-microphone"></i><span>Mute</span>`
+      : `<i class="fas fa-microphone-slash"></i><span>Unmute</span>`
+  }
+
   onRecordClick(command) {
     this.recordingEnabled = false
     return () => {
@@ -90,6 +97,15 @@ class View {
     }
   }
 
+  onToggleMicClick(command) {
+    this.micEnabled = true
+    return async () => {
+      const isActive = this.micEnabled = !this.micEnabled
+      command(this.micEnabled)
+      this.toogleMicButtonIcon(isActive)
+    }
+  }
+
   configureRecordButton(command) {
     this.recorderBtn.addEventListener('click', this.onRecordClick(command))
   }
@@ -100,5 +116,9 @@ class View {
 
   configureToggleVideoButton(command) {
     this.toggleVideoBtn.addEventListener('click', this.onToggleVideoClick(command))
+  }
+
+  configureToggleMicButton(command) {
+    this.toggleMicBtn.addEventListener('click', this.onToggleMicClick(command))
   }
 }

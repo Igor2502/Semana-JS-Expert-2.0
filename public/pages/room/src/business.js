@@ -23,6 +23,7 @@ class Business {
     this.view.configureRecordButton(this.onRecordPressed.bind(this))
     this.view.configureLeaveButton(this.onLeavePressed.bind(this))
     this.view.configureToggleVideoButton(this.onToggleVideoPressed.bind(this))
+    this.view.configureToggleMicButton(this.onToggleMicPressed.bind(this))
 
     this.currentStream = await this.media.getCamera()
     this.socket = this.socketBuilder
@@ -143,6 +144,14 @@ class Business {
     this.currentStream.getTracks().forEach((track) => {
       if (track.readyState == 'live' && track.kind === 'video') {
         track.enabled = videoEnabled
+      }
+    });
+  }
+
+  onToggleMicPressed(micEnabled) {
+    this.currentStream.getTracks().forEach((track) => {
+      if (track.readyState == 'live' && track.kind === 'audio') {
+        track.enabled = micEnabled
       }
     });
   }
