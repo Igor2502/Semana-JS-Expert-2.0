@@ -22,6 +22,7 @@ class Business {
   async _init() {
     this.view.configureRecordButton(this.onRecordPressed.bind(this))
     this.view.configureLeaveButton(this.onLeavePressed.bind(this))
+    this.view.configureToggleVideoButton(this.onToggleVideoPressed.bind(this))
 
     this.currentStream = await this.media.getCamera()
     this.socket = this.socketBuilder
@@ -138,6 +139,14 @@ class Business {
     this.usersRecordings.forEach((value, key) => value.download())
   }
 
+  onToggleVideoPressed(videoEnabled) {
+    this.currentStream.getTracks().forEach((track) => {
+      if (track.readyState == 'live' && track.kind === 'video') {
+        track.enabled = videoEnabled
+      }
+    });
+  }
+
   async stopRecording(userId) {
     const usersRecordings = this.usersRecordings
     for (const [key, value] of usersRecordings) {
@@ -149,7 +158,7 @@ class Business {
       if (!isRecordingActive) continue
 
       await rec.stopRecording()
-      this.playRecordings(key)
+      // this.playRecordings(key)
     }
   }
 

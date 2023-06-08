@@ -128,6 +128,8 @@
 .wrapper video{
     position: relative;
     z-index: 100;
+    background-color: #1c1b1b;
+    margin-right: 5px;
 }
 .wrapper div{
     position: absolute;

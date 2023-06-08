@@ -2,6 +2,7 @@ class View {
   constructor() {
     this.recorderBtn = document.getElementById('record')
     this.leaveBtn = document.getElementById('leave')
+    this.toggleVideoBtn = document.getElementById('toggle-video')
   }
 
   createVideoElement({ muted = true, src, srcObject }) {
@@ -34,7 +35,7 @@ class View {
     div.append(video)
     
     const div2 = document.createElement('div')
-    div2.innerText = isCurrentId ? '' : userId
+    div2.innerText = isCurrentId ? 'Você' : userId
     div.append(div2)
 
     const videoGrid = document.getElementById('video-grid')
@@ -56,6 +57,12 @@ class View {
     this.recorderBtn.style.color = isActive ? 'red' : 'white'
   }
 
+  toogleVideoButtonIcon(isActive = true) {
+    this.toggleVideoBtn.innerHTML = isActive 
+      ? `<i class="fas fa-video"></i><span>Stop Video</span>`
+      : `<i class="fas fa-video-slash"></i><span>Start Video</span>`
+  }
+
   onRecordClick(command) {
     this.recordingEnabled = false
     return () => {
@@ -74,11 +81,24 @@ class View {
     }
   }
 
+  onToggleVideoClick(command) {
+    this.videoEnabled = true
+    return async () => {
+      const isActive = this.videoEnabled = !this.videoEnabled
+      command(this.videoEnabled)
+      this.toogleVideoButtonIcon(isActive)
+    }
+  }
+
   configureRecordButton(command) {
     this.recorderBtn.addEventListener('click', this.onRecordClick(command))
   }
 
   configureLeaveButton(command) {
     this.leaveBtn.addEventListener('click', this.onLeaveClick(command))
+  }
+
+  configureToggleVideoButton(command) {
+    this.toggleVideoBtn.addEventListener('click', this.onToggleVideoClick(command))
   }
 }
