@@ -3,6 +3,7 @@ class SocketBuilder {
     this.socketUrl = socketUrl
     this.onUserConnected = () => {}
     this.onUserDisconnected = () => {}
+    this.onNewMessage = () => {}
   }
 
   setOnUserConnected(fn) {
@@ -15,6 +16,11 @@ class SocketBuilder {
     return this
   }
 
+  setOnNewMessage(fn) {
+    this.onNewMessage = fn
+    return this
+  }
+
   build() {
     const socket = io.connect(this.socketUrl, {
       withCredentials: false
@@ -22,6 +28,7 @@ class SocketBuilder {
 
     socket.on('user-connected', this.onUserConnected)
     socket.on('user-disconnected', this.onUserDisconnected)
+    socket.on('new-message', this.onNewMessage)
 
     return socket
   }

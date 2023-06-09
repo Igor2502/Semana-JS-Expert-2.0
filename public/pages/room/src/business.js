@@ -24,11 +24,13 @@ class Business {
     this.view.configureLeaveButton(this.onLeavePressed.bind(this))
     this.view.configureToggleVideoButton(this.onToggleVideoPressed.bind(this))
     this.view.configureToggleMicButton(this.onToggleMicPressed.bind(this))
+    this.view.configureMessageInput(this.onMessagePressed.bind(this))
 
     this.currentStream = await this.media.getCamera()
     this.socket = this.socketBuilder
       .setOnUserConnected(this.onUserConnected())
       .setOnUserDisconnected(this.onUserDisconnected())
+      .setOnNewMessage(this.onNewMessage())
       .build()
 
     this.currentPeer = await this.peerBuilder
@@ -71,6 +73,12 @@ class Business {
       this.view.setParticipants(this.peers.size)
       this.stopRecording(userId)
       this.view.removeVideoElement(userId)
+    }
+  }
+
+  onNewMessage() {
+    return (userId, message) => {
+      this.view.renderMessage(userId, message, userId === this.currentPeer.id)
     }
   }
 
@@ -134,6 +142,12 @@ class Business {
       }
       this.stopRecording(key)
     }
+  }
+
+  onMessagePressed(message) {
+    this.socket.emit('new-message', this.currentPeer.id, message)
+    this.view.renderMessage(this.currentPeer.id, message, true)
+    this.view.clearInputMessage()
   }
 
   onLeavePressed() {

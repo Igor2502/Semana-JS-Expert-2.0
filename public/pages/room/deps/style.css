@@ -144,3 +144,24 @@
 .disabled {
     opacity: 0.5;
 }
+
+.message-container {
+    background-color: #1b1c1c;
+    margin: 10px;
+    padding: 3px 10px 0px 10px;
+}
+
+.owner-user {
+    font-weight: bold;
+    color: #FF3322
+}
+
+.others-users {
+    font-weight: bold;
+    color: #009dff
+}
+
+.message-content {
+    color: white;
+    text-align: right;
+}

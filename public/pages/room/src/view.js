@@ -4,6 +4,7 @@ class View {
     this.leaveBtn = document.getElementById('leave')
     this.toggleVideoBtn = document.getElementById('toggle-video')
     this.toggleMicBtn = document.getElementById('toggle-mic')
+    this.messageIpt = document.getElementById('chat_message')
   }
 
   createVideoElement({ muted = true, src, srcObject }) {
@@ -24,9 +25,40 @@ class View {
     return video
   }
 
+  createMessageElement(userId, message, owner) {
+    const span = document.createElement('span')
+    if (owner) {
+      span.classList.add('owner-user')
+      span.append('Você')
+    } else {
+      span.classList.add('others-users')
+      span.append(userId.split('-')[0])
+    }
+
+    const p = document.createElement('p')
+    p.append(message)
+    p.classList.add('message-content')
+
+    const div = document.createElement('div')
+    div.classList.add('message-container')
+    div.append(span)
+    div.append(p)
+
+    return div
+  }
+
   renderVideo({ userId, stream = null, url = null, isCurrentId = false }) {
     const video = this.createVideoElement({ src: url, srcObject: stream, muted: isCurrentId })
     this.appendToHTMLTree(userId, video, isCurrentId)
+  }
+
+  renderMessage(userId, message, owner) {
+    const messageElement = this.createMessageElement(userId, message, owner)
+    this.appendToHTMLChat(messageElement)
+  }
+
+  clearInputMessage() {
+    this.messageIpt.value = ''
   }
 
   appendToHTMLTree(userId, video, isCurrentId) {
@@ -41,6 +73,12 @@ class View {
 
     const videoGrid = document.getElementById('video-grid')
     videoGrid.append(div)
+  }
+
+  appendToHTMLChat(message) {
+    const chat = document.getElementById('chat_area')
+
+    chat.append(message)
   }
 
   setParticipants(count) {
@@ -106,6 +144,12 @@ class View {
     }
   }
 
+  onMessagePressed(event, command) {
+    if (event.keyCode === 13) { //Verifica se foi pressionado a tecla 'Enter'
+      command(this.messageIpt.value)
+    }
+  }
+
   configureRecordButton(command) {
     this.recorderBtn.addEventListener('click', this.onRecordClick(command))
   }
@@ -120,5 +164,9 @@ class View {
 
   configureToggleMicButton(command) {
     this.toggleMicBtn.addEventListener('click', this.onToggleMicClick(command))
+  }
+
+  configureMessageInput(command) {
+    this.messageIpt.addEventListener('keyup', event => this.onMessagePressed(event, command))
   }
 }
